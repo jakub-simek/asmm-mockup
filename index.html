@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Altsächsisches Sprachgebiet – Interaktive Karte</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+    background: #f4f1eb;
+    color: #2c2418;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    text-align: center;
+    padding: 2rem 1rem 1rem;
+    max-width: 800px;
+  }
+
+  header h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #3a2e1f;
+    letter-spacing: 0.02em;
+  }
+
+  header p {
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    color: #6b5d4d;
+    line-height: 1.5;
+  }
+
+  .map-container {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    margin: 1rem auto 3rem;
+    background: #fff;
+    border: 1px solid #d4cbb8;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    overflow: visible;
+  }
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Regions */
+  .region {
+    cursor: pointer;
+    transition: fill-opacity 0.25s, stroke-width 0.25s;
+  }
+  .region:hover {
+    fill-opacity: 0.45;
+    stroke-width: 2;
+  }
+
+  /* Location dots */
+  .loc-dot {
+    cursor: pointer;
+    transition: r 0.2s, filter 0.2s;
+  }
+  .loc-dot:hover {
+    filter: brightness(1.2) drop-shadow(0 0 4px rgba(0,0,0,0.3));
+  }
+
+  /* Location labels */
+  .loc-label {
+    font-family: "Palatino Linotype", Georgia, serif;
+    font-size: 11px;
+    fill: #2c2418;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Popup */
+  #popup {
+    position: absolute;
+    display: none;
+    background: #fffdf7;
+    border: 1px solid #b8a88a;
+    border-radius: 6px;
+    padding: 14px 18px;
+    max-width: 320px;
+    min-width: 200px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    z-index: 100;
+    pointer-events: none;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  #popup.visible {
+    display: block;
+  }
+
+  #popup h3 {
+    font-size: 1rem;
+    margin-bottom: 0.35rem;
+    color: #3a2e1f;
+    border-bottom: 1px solid #e0d8c8;
+    padding-bottom: 0.3rem;
+  }
+
+  #popup .popup-type {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a7a64;
+    margin-bottom: 0.3rem;
+  }
+
+  #popup p {
+    margin: 0.3rem 0;
+    color: #4a3f32;
+  }
+
+  #popup .popup-links {
+    margin-top: 0.5rem;
+    padding-top: 0.4rem;
+    border-top: 1px solid #e8e0d0;
+  }
+
+  #popup .popup-links a {
+    display: inline-block;
+    color: #7a4b1e;
+    text-decoration: none;
+    margin-right: 0.8rem;
+    font-weight: 600;
+    font-size: 0.84rem;
+  }
+
+  #popup .popup-links a:hover {
+    text-decoration: underline;
+  }
+
+  #popup .popup-links a::before {
+    content: "→ ";
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    justify-content: center;
+    padding: 0.8rem 1.5rem;
+    background: #faf7f0;
+    border-top: 1px solid #e0d8c8;
+    font-size: 0.82rem;
+    color: #6b5d4d;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .legend-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.15);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.2);
+  }
+
+  footer {
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.8rem;
+    color: #9a8c7a;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Altsächsisches Sprachgebiet</h1>
+  <p>Interaktive Karte der Überlieferungsorte und Dialektregionen. Fahren Sie mit der Maus über Punkte und Regionen, um weitere Informationen zu erhalten.</p>
+</header>
+
+<div class="map-container" id="mapContainer">
+
+  <!-- Popup element -->
+  <div id="popup">
+    <div class="popup-type" id="popupType"></div>
+    <h3 id="popupTitle"></h3>
+    <p id="popupDesc"></p>
+    <div class="popup-links" id="popupLinks"></div>
+  </div>
+
+  <svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Water pattern -->
+      <pattern id="waterPattern" width="6" height="6" patternUnits="userSpaceOnUse">
+        <rect width="6" height="6" fill="#c8dce8"/>
+        <line x1="0" y1="3" x2="6" y2="3" stroke="#b8cdd8" stroke-width="0.5"/>
+      </pattern>
+      <!-- Subtle grid -->
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e8e0d0" stroke-width="0.3"/>
+      </pattern>
+    </defs>
+
+    <!-- Background -->
+    <rect width="800" height="600" fill="#e8dfd0"/>
+    <rect width="800" height="600" fill="url(#grid)"/>
+
+    <!-- Nordsee / North Sea -->
+    <path d="M 0 0 L 350 0 L 340 30 L 300 70 L 260 65 L 230 90 L 190 85
+             L 170 110 L 140 105 L 120 130 L 100 125 L 80 150 L 40 145
+             L 20 170 L 0 165 Z"
+          fill="url(#waterPattern)" stroke="#9ab8cc" stroke-width="1"/>
+    <text x="100" y="50" font-family="Georgia, serif" font-size="14" fill="#7a9ab0"
+          font-style="italic" transform="rotate(-10, 100, 50)">Nordsee</text>
+
+    <!-- Rivers (simplified) -->
+    <!-- Elbe -->
+    <path d="M 560 0 C 555 80, 540 140, 530 200 C 520 260, 510 320, 520 380
+             C 530 440, 550 500, 560 600"
+          fill="none" stroke="#9ab8cc" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+    <text x="545" y="160" font-family="Georgia, serif" font-size="10" fill="#7a9ab0"
+          font-style="italic" transform="rotate(80, 545, 160)">Elbe</text>
+
+    <!-- Weser -->
+    <path d="M 300 70 C 310 130, 330 180, 340 240 C 350 300, 360 360, 370 420
+             C 380 480, 390 540, 395 600"
+          fill="none" stroke="#9ab8cc" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+    <text x="325" y="310" font-family="Georgia, serif" font-size="10" fill="#7a9ab0"
+          font-style="italic" transform="rotate(80, 325, 310)">Weser</text>
+
+    <!-- Ems -->
+    <path d="M 180 100 C 190 160, 200 220, 210 280 C 220 340, 225 400, 230 460
+             C 235 520, 240 560, 245 600"
+          fill="none" stroke="#9ab8cc" stroke-width="1.8" stroke-linecap="round" opacity="0.7"/>
+    <text x="195" y="240" font-family="Georgia, serif" font-size="10" fill="#7a9ab0"
+          font-style="italic" transform="rotate(82, 195, 240)">Ems</text>
+
+    <!-- Rhein (western border) -->
+    <path d="M 80 300 C 90 340, 95 380, 100 420 C 105 460, 110 500, 115 540
+             L 120 600"
+          fill="none" stroke="#9ab8cc" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+    <text x="72" y="370" font-family="Georgia, serif" font-size="10" fill="#7a9ab0"
+          font-style="italic" transform="rotate(82, 72, 370)">Rhein</text>
+
+    <!-- ============================================================ -->
+    <!-- REGIONS (Dialektgebiete) -->
+    <!-- ============================================================ -->
+
+    <!-- Westfälisch -->
+    <path class="region" id="reg-westfaelisch"
+          d="M 100 280 C 140 250, 200 230, 260 250
+             C 300 260, 310 300, 300 350
+             C 290 410, 250 450, 200 460
+             C 150 470, 110 430, 100 380 Z"
+          fill="#c4956a" fill-opacity="0.28" stroke="#c4956a" stroke-width="1.2" stroke-dasharray="6,3"
+          data-name="Westfälisch"
+          data-type="Dialektregion"
+          data-desc="Westfälisches Dialektgebiet. Hier entstanden wichtige altsächsische Texte, darunter Teile des Heliand und kleinere Denkmäler."
+          data-links='[{"label":"Heliand (Überblick)","url":"#heliand"},{"label":"Kleinere Denkmäler","url":"#kleinere-denkmaeler"}]'/>
+    <text x="195" y="360" font-family="Georgia, serif" font-size="13" fill="#8a6540"
+          font-style="italic" text-anchor="middle" pointer-events="none" opacity="0.8">Westfälisch</text>
+
+    <!-- Engernsch / Ostfälisch -->
+    <path class="region" id="reg-ostfaelisch"
+          d="M 300 200 C 360 180, 430 190, 470 220
+             C 510 250, 510 310, 490 360
+             C 470 410, 420 440, 370 430
+             C 320 420, 290 380, 290 330
+             C 290 280, 290 230, 300 200 Z"
+          fill="#7a9a5e" fill-opacity="0.25" stroke="#7a9a5e" stroke-width="1.2" stroke-dasharray="6,3"
+          data-name="Ostfälisch (Engernsch)"
+          data-type="Dialektregion"
+          data-desc="Ostfälischer Dialektraum zwischen Weser und Elbe, mit Zentren in Hildesheim und Halberstadt. Einige Glossenhandschriften stammen aus diesem Gebiet."
+          data-links='[{"label":"Essener Glossare","url":"#glossare"},{"label":"Ostfälische Merkmale","url":"#ostfaelisch"}]'/>
+    <text x="395" y="320" font-family="Georgia, serif" font-size="13" fill="#567a3e"
+          font-style="italic" text-anchor="middle" pointer-events="none" opacity="0.8">Ostfälisch</text>
+
+    <!-- Nordniedersächsisch -->
+    <path class="region" id="reg-nordnds"
+          d="M 140 110 C 220 90, 340 80, 440 100
+             C 520 115, 540 140, 530 180
+             C 520 210, 470 220, 400 210
+             C 340 200, 280 210, 260 250
+             C 240 230, 200 220, 160 210
+             C 130 200, 120 160, 140 110 Z"
+          fill="#5e8aaa" fill-opacity="0.2" stroke="#5e8aaa" stroke-width="1.2" stroke-dasharray="6,3"
+          data-name="Nordniedersächsisch"
+          data-type="Dialektregion"
+          data-desc="Nördlicher Dialektraum des Altsächsischen, von der Nordseeküste bis ins Binnenland. Wenige direkte Textzeugnisse, aber sprachlich rekonstruierbar."
+          data-links='[{"label":"Taufgelöbnisse","url":"#taufgeloebnis"},{"label":"Nordnds. Merkmale","url":"#nordnds"}]'/>
+    <text x="340" y="150" font-family="Georgia, serif" font-size="13" fill="#3e6a8a"
+          font-style="italic" text-anchor="middle" pointer-events="none" opacity="0.8">Nordniedersächsisch</text>
+
+    <!-- Grenzgebiet fränkisch-sächsisch -->
+    <path class="region" id="reg-grenz"
+          d="M 120 460 C 180 440, 260 450, 340 460
+             C 420 470, 480 470, 520 480
+             C 540 500, 530 540, 500 560
+             C 440 580, 340 580, 240 570
+             C 160 560, 110 520, 120 460 Z"
+          fill="#aa7a5e" fill-opacity="0.18" stroke="#aa7a5e" stroke-width="1" stroke-dasharray="4,4"
+          data-name="Fränkisch-sächsisches Übergangsgebiet"
+          data-type="Kontaktzone"
+          data-desc="Übergangsgebiet zwischen altsächsischem und altfränkischem Sprachraum. Texte aus diesem Raum zeigen oft Mischmerkmale beider Dialekte."
+          data-links='[{"label":"Sprachmischung","url":"#mischung"},{"label":"Werden-Texte","url":"#werden"}]'/>
+    <text x="330" y="520" font-family="Georgia, serif" font-size="11" fill="#8a6040"
+          font-style="italic" text-anchor="middle" pointer-events="none" opacity="0.7">Fränk.-sächs. Übergangsgebiet</text>
+
+    <!-- ============================================================ -->
+    <!-- LOCATION POINTS -->
+    <!-- ============================================================ -->
+
+    <!-- Corvey -->
+    <circle class="loc-dot" cx="340" cy="380" r="7" fill="#b5432a" stroke="#fff" stroke-width="1.5"
+            data-name="Corvey"
+            data-type="Kloster / Überlieferungsort"
+            data-desc="Benediktinerkloster an der Weser, gegr. 822. Einer der bedeutendsten Überlieferungsorte altsächsischer Literatur. Hier wurde wahrscheinlich der Heliand abgeschrieben (Hs. M = München, Cgm 25)."
+            data-links='[{"label":"Heliand, Hs. M","url":"#heliand-m"},{"label":"Corveyer Traditionen","url":"#corvey-trad"},{"label":"Klostergeschichte","url":"#corvey-hist"}]'/>
+    <text class="loc-label" x="354" y="378">Corvey</text>
+
+    <!-- Werden -->
+    <circle class="loc-dot" cx="130" cy="440" r="7" fill="#b5432a" stroke="#fff" stroke-width="1.5"
+            data-name="Werden"
+            data-type="Kloster / Überlieferungsort"
+            data-desc="Kloster Werden an der Ruhr, gegr. 799. Bedeutendes Skriptorium im fränkisch-sächsischen Grenzgebiet. Überliefert u.a. die altsächsische Genesis und Heberegister."
+            data-links='[{"label":"As. Genesis","url":"#genesis"},{"label":"Werdener Heberegister","url":"#heberegister"},{"label":"Werdener Prudentius-Glossen","url":"#prudentius"}]'/>
+    <text class="loc-label" x="144" y="438">Werden</text>
+
+    <!-- Essen -->
+    <circle class="loc-dot" cx="120" cy="410" r="5.5" fill="#d4803a" stroke="#fff" stroke-width="1.5"
+            data-name="Essen"
+            data-type="Stift / Überlieferungsort"
+            data-desc="Damenstift Essen, gegr. um 845. Besitzt altsächsische Glossenhandschriften und ist ein wichtiger Ort der frühmittelalterlichen Bildungsgeschichte."
+            data-links='[{"label":"Essener Evangeliarglossen","url":"#essen-glossen"},{"label":"Stiftsgeschichte","url":"#essen-hist"}]'/>
+    <text class="loc-label" x="134" y="408">Essen</text>
+
+    <!-- Münster -->
+    <circle class="loc-dot" cx="180" cy="340" r="5.5" fill="#d4803a" stroke="#fff" stroke-width="1.5"
+            data-name="Münster"
+            data-type="Bistum / Überlieferungsort"
+            data-desc="Bischofssitz, gegr. 805. Zentrum der Christianisierung Westfalens. Altsächsische Textzeugnisse in Form von Glossen und liturgischen Fragmenten."
+            data-links='[{"label":"Münstersche Glossen","url":"#muenster-glossen"},{"label":"Bistum Münster","url":"#muenster-hist"}]'/>
+    <text class="loc-label" x="194" y="338">Münster</text>
+
+    <!-- Fulda -->
+    <circle class="loc-dot" cx="380" cy="540" r="7" fill="#b5432a" stroke="#fff" stroke-width="1.5"
+            data-name="Fulda"
+            data-type="Kloster / Auftragsort"
+            data-desc="Reichskloster Fulda (gegr. 744) im fränkischen Gebiet, aber eng mit der sächsischen Mission verbunden. Möglicherweise Auftragsort des Heliand. Überliefert das altsächsische Taufgelöbnis."
+            data-links='[{"label":"As. Taufgelöbnis","url":"#taufgeloebnis"},{"label":"Heliand-Praefatio","url":"#praefatio"},{"label":"Kloster Fulda","url":"#fulda-hist"}]'/>
+    <text class="loc-label" x="394" y="538">Fulda</text>
+
+    <!-- Hildesheim -->
+    <circle class="loc-dot" cx="420" cy="310" r="5.5" fill="#d4803a" stroke="#fff" stroke-width="1.5"
+            data-name="Hildesheim"
+            data-type="Bistum / Überlieferungsort"
+            data-desc="Bischofssitz (gegr. 815) im ostfälischen Raum. Glossenhandschriften und liturgische Texte mit altsächsischen Spuren."
+            data-links='[{"label":"Hildesheimer Glossen","url":"#hildesheim-glossen"},{"label":"Bistum Hildesheim","url":"#hildesheim-hist"}]'/>
+    <text class="loc-label" x="434" y="308">Hildesheim</text>
+
+    <!-- Halberstadt -->
+    <circle class="loc-dot" cx="490" cy="310" r="5" fill="#d4803a" stroke="#fff" stroke-width="1.5"
+            data-name="Halberstadt"
+            data-type="Bistum"
+            data-desc="Bischofssitz im östlichen Sachsen (gegr. 804). Östlichster Punkt des altsächsischen Sprachgebiets mit vereinzelten Glossenbelegen."
+            data-links='[{"label":"Halberstädter Belege","url":"#halberstadt"}]'/>
+    <text class="loc-label" x="504" y="308">Halberstadt</text>
+
+    <!-- Mainz (Heliand-Fragment) -->
+    <circle class="loc-dot" cx="200" cy="560" r="5" fill="#8a5aa0" stroke="#fff" stroke-width="1.5"
+            data-name="Mainz"
+            data-type="Fundort (Fragment)"
+            data-desc="Aus Mainz stammt ein bedeutendes Heliand-Fragment (Cgm 25 Fragm.), das für die Textgeschichte des Epos wichtig ist."
+            data-links='[{"label":"Heliand-Fragment","url":"#heliand-frag"}]'/>
+    <text class="loc-label" x="214" y="558">Mainz</text>
+
+    <!-- Paderborn -->
+    <circle class="loc-dot" cx="280" cy="400" r="5.5" fill="#d4803a" stroke="#fff" stroke-width="1.5"
+            data-name="Paderborn"
+            data-type="Pfalz / Bistum"
+            data-desc="Karolingische Pfalz und Bischofssitz (gegr. 799). Bedeutend für die Sachsenmission Karls des Großen. Synoden und Taufaktionen fanden hier statt."
+            data-links='[{"label":"Paderborner Mission","url":"#paderborn"},{"label":"Capitulatio de partibus Saxoniae","url":"#capitulatio"}]'/>
+    <text class="loc-label" x="294" y="398">Paderborn</text>
+
+    <!-- Osnabrück -->
+    <circle class="loc-dot" cx="220" cy="290" r="5" fill="#d4803a" stroke="#fff" stroke-width="1.5"
+            data-name="Osnabrück"
+            data-type="Bistum"
+            data-desc="Bischofssitz (gegr. 780). Eines der ersten Bistümer im sächsischen Gebiet, errichtet als Missionsstützpunkt."
+            data-links='[{"label":"Bistum Osnabrück","url":"#osnabrueck"}]'/>
+    <text class="loc-label" x="234" y="288">Osnabrück</text>
+
+    <!-- Bremen -->
+    <circle class="loc-dot" cx="340" cy="160" r="5" fill="#d4803a" stroke="#fff" stroke-width="1.5"
+            data-name="Bremen"
+            data-type="Erzbistum"
+            data-desc="Erzbistum Bremen (gegr. 787), Zentrum der nordischen Mission. Wenige direkte altsächsische Textzeugnisse, aber kirchengeschichtlich zentral."
+            data-links='[{"label":"Erzbistum Bremen","url":"#bremen"}]'/>
+    <text class="loc-label" x="354" y="158">Bremen</text>
+
+    <!-- Hamburg -->
+    <circle class="loc-dot" cx="480" cy="110" r="5" fill="#d4803a" stroke="#fff" stroke-width="1.5"
+            data-name="Hamburg"
+            data-type="Erzbistum"
+            data-desc="Erzbistum Hamburg (gegr. 831), seit 845 mit Bremen vereinigt. Nördlichster Punkt des sächsischen Kirchenraums."
+            data-links='[{"label":"Hamburg-Bremen","url":"#hamburg-bremen"}]'/>
+    <text class="loc-label" x="494" y="108">Hamburg</text>
+
+    <!-- Verden -->
+    <circle class="loc-dot" cx="370" cy="220" r="4.5" fill="#6a8a5e" stroke="#fff" stroke-width="1.2"
+            data-name="Verden"
+            data-type="Bistum"
+            data-desc="Bischofssitz an der Aller (gegr. 786). Historisch bedeutsam als Ort des ‚Blutgerichts von Verden' (782)."
+            data-links='[{"label":"Bistum Verden","url":"#verden"}]'/>
+    <text class="loc-label" x="384" y="218">Verden</text>
+
+    <!-- Freckenhorst -->
+    <circle class="loc-dot" cx="195" cy="385" r="5" fill="#8a5aa0" stroke="#fff" stroke-width="1.5"
+            data-name="Freckenhorst"
+            data-type="Stift / Sprachdenkmal"
+            data-desc="Damenstift Freckenhorst (gegr. um 851). Herkunftsort der Freckenhorster Heberolle, eines der wichtigsten altsächsisch-altniederdeutschen Sprachdenkmäler."
+            data-links='[{"label":"Freckenhorster Heberolle","url":"#freckenhorst-heberolle"},{"label":"Stiftsgeschichte","url":"#freckenhorst-hist"}]'/>
+    <text class="loc-label" x="209" y="395">Freckenhorst</text>
+
+    <!-- Magdeburg (Grenze Ost) -->
+    <circle class="loc-dot" cx="530" cy="280" r="4.5" fill="#6a8a5e" stroke="#fff" stroke-width="1.2"
+            data-name="Magdeburg"
+            data-type="Erzbistum"
+            data-desc="Erzbistum Magdeburg (gegr. 968). Östliche Grenze des altsächsischen Sprachgebiets, das hier an das slawische Siedlungsgebiet grenzte."
+            data-links='[{"label":"Erzbistum Magdeburg","url":"#magdeburg"}]'/>
+    <text class="loc-label" x="544" y="278">Magdeburg</text>
+
+    <!-- Border line: approximate southern border of Old Saxon -->
+    <path d="M 80 460 C 130 440, 200 445, 280 455
+             C 360 465, 440 460, 520 475"
+          fill="none" stroke="#8a6040" stroke-width="1.5" stroke-dasharray="8,4" opacity="0.5"/>
+    <text x="540" y="475" font-family="Georgia, serif" font-size="9" fill="#8a6040"
+          font-style="italic" opacity="0.7">ungefähre Südgrenze des As.</text>
+
+    <!-- Compass rose -->
+    <g transform="translate(720, 80)">
+      <circle r="22" fill="#fffdf7" stroke="#b8a88a" stroke-width="0.8"/>
+      <line x1="0" y1="-18" x2="0" y2="18" stroke="#6b5d4d" stroke-width="0.8"/>
+      <line x1="-18" y1="0" x2="18" y2="0" stroke="#6b5d4d" stroke-width="0.8"/>
+      <polygon points="0,-17 -4,-6 4,-6" fill="#3a2e1f"/>
+      <text x="0" y="-24" font-family="Georgia, serif" font-size="11" fill="#3a2e1f"
+            text-anchor="middle" font-weight="bold">N</text>
+    </g>
+
+    <!-- Scale bar (approximate) -->
+    <g transform="translate(620, 560)">
+      <line x1="0" y1="0" x2="100" y2="0" stroke="#6b5d4d" stroke-width="1.5"/>
+      <line x1="0" y1="-4" x2="0" y2="4" stroke="#6b5d4d" stroke-width="1.5"/>
+      <line x1="50" y1="-3" x2="50" y2="3" stroke="#6b5d4d" stroke-width="1"/>
+      <line x1="100" y1="-4" x2="100" y2="4" stroke="#6b5d4d" stroke-width="1.5"/>
+      <text x="0" y="14" font-family="Georgia, serif" font-size="9" fill="#6b5d4d" text-anchor="middle">0</text>
+      <text x="50" y="14" font-family="Georgia, serif" font-size="9" fill="#6b5d4d" text-anchor="middle">50</text>
+      <text x="100" y="14" font-family="Georgia, serif" font-size="9" fill="#6b5d4d" text-anchor="middle">100 km</text>
+    </g>
+
+  </svg>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#b5432a;"></div>
+      <span>Hauptüberlieferungsort</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#d4803a;"></div>
+      <span>Bistum / Stift</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#8a5aa0;"></div>
+      <span>Fundort / Sprachdenkmal</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background:#6a8a5e;"></div>
+      <span>Grenzort</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:rgba(94,138,170,0.25);"></div>
+      <span>Nordniedersächsisch</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:rgba(196,149,106,0.3);"></div>
+      <span>Westfälisch</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-swatch" style="background:rgba(122,154,94,0.3);"></div>
+      <span>Ostfälisch</span>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Mockup – Altsächsisches Editionsprojekt &middot; Kartendaten schematisch
+</footer>
+
+<script>
+(function() {
+  const popup = document.getElementById('popup');
+  const popupTitle = document.getElementById('popupTitle');
+  const popupType = document.getElementById('popupType');
+  const popupDesc = document.getElementById('popupDesc');
+  const popupLinks = document.getElementById('popupLinks');
+  const container = document.getElementById('mapContainer');
+
+  // All interactive elements
+  const interactives = document.querySelectorAll('.loc-dot, .region');
+
+  function showPopup(el, event) {
+    const name = el.dataset.name;
+    const type = el.dataset.type;
+    const desc = el.dataset.desc;
+    let links = [];
+    try { links = JSON.parse(el.dataset.links); } catch(e) {}
+
+    popupTitle.textContent = name;
+    popupType.textContent = type;
+    popupDesc.textContent = desc;
+
+    popupLinks.innerHTML = '';
+    if (links.length > 0) {
+      links.forEach(link => {
+        const a = document.createElement('a');
+        a.href = link.url;
+        a.textContent = link.label;
+        popupLinks.appendChild(a);
+      });
+      popupLinks.style.display = '';
+    } else {
+      popupLinks.style.display = 'none';
+    }
+
+    popup.classList.add('visible');
+    positionPopup(event);
+  }
+
+  function positionPopup(event) {
+    const rect = container.getBoundingClientRect();
+    let x = event.clientX - rect.left + 16;
+    let y = event.clientY - rect.top - 10;
+
+    // Keep popup within container bounds
+    const pw = popup.offsetWidth;
+    const ph = popup.offsetHeight;
+
+    if (x + pw > rect.width - 10) {
+      x = event.clientX - rect.left - pw - 16;
+    }
+    if (y + ph > rect.height - 10) {
+      y = rect.height - ph - 10;
+    }
+    if (y < 10) y = 10;
+
+    popup.style.left = x + 'px';
+    popup.style.top = y + 'px';
+  }
+
+  function hidePopup() {
+    popup.classList.remove('visible');
+  }
+
+  interactives.forEach(el => {
+    el.addEventListener('mouseenter', function(e) {
+      showPopup(this, e);
+    });
+
+    el.addEventListener('mousemove', function(e) {
+      positionPopup(e);
+    });
+
+    el.addEventListener('mouseleave', function() {
+      hidePopup();
+    });
+  });
+
+  // Touch support for mobile
+  interactives.forEach(el => {
+    el.addEventListener('touchstart', function(e) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      showPopup(this, touch);
+    });
+  });
+
+  document.addEventListener('touchstart', function(e) {
+    if (!e.target.closest('.loc-dot, .region')) {
+      hidePopup();
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
