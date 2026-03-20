@@ -163,7 +163,29 @@
   <li><strong>Inkscape-Namespaces:</strong> Beim Speichern &bdquo;Optimiertes SVG&ldquo; w&auml;hlen, um Inkscape-spezifische Attribute (<code>inkscape:label</code>, <code>sodipodi:*</code>) zu entfernen.</li>
 </ul>
 
-<h2>5. Empfehlung: Trennung von Grafik und Daten</h2>
+<h2>5. Hinweise f&uuml;r Affinity Designer</h2>
+
+<ul>
+  <li><strong>IDs vergeben:</strong> Im Ebenen-Panel (Layers) Objekte per Doppelklick benennen &ndash; der Ebenenname wird beim SVG-Export zur <code>id</code>. Sprechende Namen wie <code>reg-westfaelisch</code> oder <code>corvey</code> verwenden.</li>
+  <li><strong>Classes:</strong> Affinity Designer unterst&uuml;tzt <em>keine</em> <code>class</code>-Attribute. Diese m&uuml;ssen <strong>nach dem Export</strong> erg&auml;nzt werden (manuell oder per Skript).</li>
+  <li><strong><code>data-*</code>-Attribute:</strong> K&ouml;nnen nicht in Affinity gesetzt werden &ndash; nachtr&auml;glich einf&uuml;gen (siehe Abschnitt 6).</li>
+  <li><strong>SVG-Export:</strong> Beim Export <em>Datei &rarr; Exportieren &rarr; SVG</em> w&auml;hlen (nicht &bdquo;SVG f&uuml;r Web&ldquo;). Folgende Einstellungen beachten:
+    <ul>
+      <li><strong>Fl&auml;chen erhalten:</strong> Option &bdquo;Kurven in Pfade konvertieren&ldquo; aktivieren, damit Formen als <code>&lt;path&gt;</code>-Elemente exportiert werden</li>
+      <li><strong>Text:</strong> Textelemente m&ouml;glichst <em>nicht</em> in Kurven umwandeln, damit <code>&lt;text&gt;</code>-Elemente im SVG erhalten bleiben und das JavaScript sie ansprechen kann</li>
+      <li><strong>Preset:</strong> &bdquo;SVG (for export)&ldquo; verwenden, nicht &bdquo;SVG (for web)&ldquo; &ndash; letzteres bettet CSS-Styles inline ein und kann IDs ver&auml;ndern</li>
+    </ul>
+  </li>
+  <li><strong>Transforms:</strong> Affinity bettet h&auml;ufig <code>transform</code>-Attribute ein, insbesondere bei rotierten oder skalierten Objekten. Vor dem Export alle Objekte &uuml;ber <em>Ebene &rarr; Geometrie &rarr; Transformationen einbacken</em> (bzw. die Pfade manuell zur&uuml;cksetzen) bereinigen.</li>
+  <li><strong>Gruppen und Verschachtelung:</strong> Affinity erzeugt beim Export teils tief verschachtelte <code>&lt;g&gt;</code>-Elemente mit <code>serif:id</code>-Attributen. Diese nach dem Export entfernen &ndash; ein Tool wie <a href="https://jakearchibald.github.io/svgomg/">SVGOMG</a> kann dabei helfen (Vorsicht: IDs und Klassen beibehalten!).</li>
+  <li><strong>Artboards:</strong> Falls mit Artboards gearbeitet wird, darauf achten, dass nur <em>ein</em> Artboard f&uuml;r die Karte verwendet wird, da Affinity sonst mehrere <code>&lt;svg&gt;</code>-Bl&ouml;cke erzeugt.</li>
+</ul>
+
+<div class="note">
+  <strong>Tipp:</strong> In Affinity Designer kann man zwischen den Personas <em>Draw</em> (Vektor) und <em>Pixel</em> wechseln. F&uuml;r die SVG-Karte ausschlie&szlig;lich in der <strong>Draw-Persona</strong> arbeiten, damit alle Objekte als Vektorpfade erhalten bleiben.
+</div>
+
+<h2>6. Empfehlung: Trennung von Grafik und Daten</h2>
 
 <p>Am saubersten ist es, wenn die Karte <strong>nur Geometrie und IDs</strong> enth&auml;lt. Die Metadaten (Name, Typ, Beschreibung, Links) werden in einer <strong>separaten JSON-Datei</strong> gepflegt:</p>
 
@@ -194,7 +216,7 @@
   <li>Die SVG-Datei bleibt schlank und &uuml;bersichtlich</li>
 </ul>
 
-<h2>6. SVG-Beispiel (Minimalstruktur)</h2>
+<h2>7. SVG-Beispiel (Minimalstruktur)</h2>
 
 <pre><code>&lt;svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"&gt;
 
@@ -220,7 +242,7 @@
 
 &lt;/svg&gt;</code></pre>
 
-<h2>7. Checkliste vor &Uuml;bergabe</h2>
+<h2>8. Checkliste vor &Uuml;bergabe</h2>
 
 <ul>
   <li>&square; Jede Region hat <code>class="region"</code> und eine sprechende <code>id</code></li>
