@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>SVG-Richtlinien für die Kartenerstellung – Altsächsisches Sprachgebiet</title>
+<style>
+  @page { margin: 2cm; }
+  body {
+    font-family: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+    color: #2c2418;
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    line-height: 1.65;
+    font-size: 11pt;
+  }
+  h1 {
+    font-size: 1.6rem;
+    color: #3a2e1f;
+    border-bottom: 2px solid #c4956a;
+    padding-bottom: 0.4rem;
+    margin-bottom: 1.5rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+    color: #3a2e1f;
+    margin-top: 1.8rem;
+    margin-bottom: 0.6rem;
+    border-bottom: 1px solid #e0d8c8;
+    padding-bottom: 0.3rem;
+  }
+  h3 {
+    font-size: 1rem;
+    color: #6b5d4d;
+    margin-top: 1.2rem;
+    margin-bottom: 0.4rem;
+  }
+  p, li { margin-bottom: 0.5rem; }
+  ul { padding-left: 1.5rem; }
+  code {
+    font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    background: #f4f1eb;
+    padding: 0.1em 0.35em;
+    border-radius: 3px;
+    font-size: 0.92em;
+  }
+  pre {
+    background: #f4f1eb;
+    border: 1px solid #e0d8c8;
+    border-radius: 4px;
+    padding: 0.8rem 1rem;
+    overflow-x: auto;
+    font-size: 0.88em;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8rem 0;
+    font-size: 0.92em;
+  }
+  th, td {
+    border: 1px solid #d4cbb8;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f4f1eb;
+    color: #3a2e1f;
+    font-weight: 600;
+  }
+  .note {
+    background: #faf7f0;
+    border-left: 4px solid #c4956a;
+    padding: 0.6rem 1rem;
+    margin: 1rem 0;
+    font-size: 0.95em;
+  }
+  .footer {
+    margin-top: 2rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #e0d8c8;
+    font-size: 0.85em;
+    color: #9a8c7a;
+  }
+</style>
+</head>
+<body>
+
+<h1>SVG-Richtlinien f&uuml;r die Kartenerstellung</h1>
+<p><strong>Projekt:</strong> Alts&auml;chsisches Sprachgebiet &ndash; Interaktive Karte<br>
+<strong>Stand:</strong> 20. M&auml;rz 2026</p>
+
+<p>Dieses Dokument beschreibt, welche Konventionen beim Zeichnen der SVG-Karte in Illustrator oder Inkscape eingehalten werden m&uuml;ssen, damit die Grafik sp&auml;ter in der interaktiven Webanwendung korrekt funktioniert.</p>
+
+<h2>1. Pflicht-Attribute f&uuml;r SVG-Elemente</h2>
+
+<h3>1.1 Regionen (Dialektgebiete) &ndash; Polygone/Pfade</h3>
+
+<table>
+  <tr><th>Attribut</th><th>Wert</th><th>Beispiel</th></tr>
+  <tr><td><code>class</code></td><td><code>"region"</code> (immer gleich)</td><td><code>class="region"</code></td></tr>
+  <tr><td><code>id</code></td><td><code>"reg-&lt;kennung&gt;"</code></td><td><code>id="reg-westfaelisch"</code></td></tr>
+  <tr><td><code>data-name</code></td><td>Anzeigename</td><td><code>data-name="Westf&auml;lisch"</code></td></tr>
+  <tr><td><code>data-type</code></td><td>Kategorie</td><td><code>data-type="Dialektregion"</code></td></tr>
+  <tr><td><code>data-desc</code></td><td>Beschreibungstext</td><td><code>data-desc="Westf&auml;lisches Dialektgebiet..."</code></td></tr>
+  <tr><td><code>data-links</code></td><td>JSON-Array mit Links</td><td><code>data-links='[{"label":"Heliand","url":"#heliand"}]'</code></td></tr>
+</table>
+
+<h3>1.2 Ortspunkte &ndash; Kreise</h3>
+
+<table>
+  <tr><th>Attribut</th><th>Wert</th><th>Beispiel</th></tr>
+  <tr><td><code>class</code></td><td><code>"loc-dot"</code> (immer gleich)</td><td><code>class="loc-dot"</code></td></tr>
+  <tr><td><code>data-name</code></td><td>Ortsname</td><td><code>data-name="Corvey"</code></td></tr>
+  <tr><td><code>data-type</code></td><td>Ortstyp</td><td><code>data-type="Kloster / &Uuml;berlieferungsort"</code></td></tr>
+  <tr><td><code>data-desc</code></td><td>Beschreibung</td><td><code>data-desc="Benediktinerkloster an der Weser..."</code></td></tr>
+  <tr><td><code>data-links</code></td><td>JSON-Array</td><td><code>data-links='[{"label":"Heliand, Hs. M","url":"#heliand-m"}]'</code></td></tr>
+</table>
+
+<h3>1.3 Ortslabels &ndash; Textelemente</h3>
+
+<table>
+  <tr><th>Attribut</th><th>Wert</th><th>Zweck</th></tr>
+  <tr><td><code>class</code></td><td><code>"loc-label"</code></td><td>Steuert Schriftart, -gr&ouml;&szlig;e und deaktiviert Maus-Events</td></tr>
+</table>
+
+<h2>2. Ebenenstruktur (Layer)</h2>
+
+<p>Die SVG sollte folgende Ebenen enthalten, jeweils als eigene <code>&lt;g&gt;</code>-Gruppe:</p>
+
+<ol>
+  <li><strong>Hintergrund</strong> &ndash; Grundfl&auml;che, Gitter</li>
+  <li><strong>Gew&auml;sser</strong> &ndash; Nordsee, Fl&uuml;sse (Elbe, Weser, Ems, Rhein), Beschriftung</li>
+  <li><strong>Regionen</strong> &ndash; Dialektgebiet-Polygone mit <code>class="region"</code></li>
+  <li><strong>Grenzlinien</strong> &ndash; Gestrichelte Sprachgrenzen</li>
+  <li><strong>Ortspunkte</strong> &ndash; Kreise mit <code>class="loc-dot"</code></li>
+  <li><strong>Ortslabels</strong> &ndash; Textelemente mit <code>class="loc-label"</code></li>
+  <li><strong>Kartenm&ouml;bel</strong> &ndash; Kompassrose, Ma&szlig;stab</li>
+</ol>
+
+<div class="note">
+  <strong>Wichtig:</strong> Regionen m&uuml;ssen <em>unter</em> den Ortspunkten liegen, damit die Punkte anklickbar bleiben. Die Reihenfolge der Ebenen in der SVG bestimmt die Z-Reihenfolge.
+</div>
+
+<h2>3. Hinweise f&uuml;r Illustrator</h2>
+
+<ul>
+  <li><strong>IDs vergeben:</strong> Im Ebenen-Panel den Objekt-Namen setzen &ndash; dieser wird zur SVG-ID. Automatisch erzeugte Namen wie <code>path_1</code> ersetzen.</li>
+  <li><strong>Classes:</strong> Illustrator unterst&uuml;tzt <em>keine</em> <code>class</code>-Attribute nativ. Diese m&uuml;ssen <strong>nach dem Export</strong> manuell oder per Skript erg&auml;nzt werden.</li>
+  <li><strong><code>data-*</code>-Attribute:</strong> K&ouml;nnen ebenfalls nicht in Illustrator gesetzt werden &ndash; nachtr&auml;glich einf&uuml;gen (siehe Abschnitt 5).</li>
+  <li><strong>Transforms vermeiden:</strong> Objekte direkt an der endg&uuml;ltigen Position platzieren. Illustrator bettet sonst <code>transform="translate(...)"</code> ein, was die Koordinatenberechnung erschwert.</li>
+  <li><strong>Unn&ouml;tige Gruppierungen:</strong> Illustrator erzeugt oft verschachtelte <code>&lt;g&gt;</code>-Elemente &ndash; nach Export aufr&auml;umen.</li>
+</ul>
+
+<h2>4. Hinweise f&uuml;r Inkscape</h2>
+
+<ul>
+  <li><strong>IDs und Classes:</strong> &Uuml;ber den XML-Editor (Strg+Shift+X) direkt am Element setzen.</li>
+  <li><strong><code>data-*</code>-Attribute:</strong> Ebenfalls &uuml;ber den XML-Editor m&ouml;glich, aber bei vielen Elementen unpraktisch &ndash; besser per Skript (siehe Abschnitt 5).</li>
+  <li><strong>Inkscape-Namespaces:</strong> Beim Speichern &bdquo;Optimiertes SVG&ldquo; w&auml;hlen, um Inkscape-spezifische Attribute (<code>inkscape:label</code>, <code>sodipodi:*</code>) zu entfernen.</li>
+</ul>
+
+<h2>5. Empfehlung: Trennung von Grafik und Daten</h2>
+
+<p>Am saubersten ist es, wenn die Karte <strong>nur Geometrie und IDs</strong> enth&auml;lt. Die Metadaten (Name, Typ, Beschreibung, Links) werden in einer <strong>separaten JSON-Datei</strong> gepflegt:</p>
+
+<pre><code>{
+  "reg-westfaelisch": {
+    "name": "Westf&auml;lisch",
+    "type": "Dialektregion",
+    "desc": "Westf&auml;lisches Dialektgebiet...",
+    "links": [
+      {"label": "Heliand", "url": "#heliand"}
+    ]
+  },
+  "corvey": {
+    "name": "Corvey",
+    "type": "Kloster / &Uuml;berlieferungsort",
+    "desc": "Benediktinerkloster an der Weser...",
+    "links": [...]
+  }
+}</code></pre>
+
+<p>Die Verkn&uuml;pfung erfolgt &uuml;ber die <code>id</code>-Attribute. Ein Build-Skript kann die <code>data-*</code>-Attribute automatisch in die SVG einsetzen, oder das JavaScript l&auml;dt die Daten separat und verkn&uuml;pft sie zur Laufzeit per ID.</p>
+
+<p><strong>Vorteile:</strong></p>
+<ul>
+  <li>Kartografie und Inhalte k&ouml;nnen unabh&auml;ngig voneinander bearbeitet werden</li>
+  <li>Der Wissenschaftler braucht sich nicht mit SVG-Attributen zu befassen</li>
+  <li>Texte lassen sich leichter korrekturlesen und &uuml;bersetzen</li>
+  <li>Die SVG-Datei bleibt schlank und &uuml;bersichtlich</li>
+</ul>
+
+<h2>6. SVG-Beispiel (Minimalstruktur)</h2>
+
+<pre><code>&lt;svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"&gt;
+
+  &lt;!-- Ebene: Regionen --&gt;
+  &lt;g id="layer-regions"&gt;
+    &lt;path class="region" id="reg-westfaelisch" d="M 100 280 ..." /&gt;
+    &lt;path class="region" id="reg-ostfaelisch" d="M 300 200 ..." /&gt;
+  &lt;/g&gt;
+
+  &lt;!-- Ebene: Ortspunkte --&gt;
+  &lt;g id="layer-locations"&gt;
+    &lt;circle class="loc-dot" id="corvey"
+            cx="340" cy="380" r="7" /&gt;
+    &lt;circle class="loc-dot" id="werden"
+            cx="130" cy="440" r="7" /&gt;
+  &lt;/g&gt;
+
+  &lt;!-- Ebene: Labels --&gt;
+  &lt;g id="layer-labels"&gt;
+    &lt;text class="loc-label" x="354" y="378"&gt;Corvey&lt;/text&gt;
+    &lt;text class="loc-label" x="144" y="438"&gt;Werden&lt;/text&gt;
+  &lt;/g&gt;
+
+&lt;/svg&gt;</code></pre>
+
+<h2>7. Checkliste vor &Uuml;bergabe</h2>
+
+<ul>
+  <li>&square; Jede Region hat <code>class="region"</code> und eine sprechende <code>id</code></li>
+  <li>&square; Jeder Ortspunkt hat <code>class="loc-dot"</code></li>
+  <li>&square; Jedes Textlabel hat <code>class="loc-label"</code></li>
+  <li>&square; Keine automatisch generierten IDs mehr vorhanden (<code>path_1</code>, etc.)</li>
+  <li>&square; Keine unn&ouml;tigen <code>transform</code>-Attribute auf Einzelobjekten</li>
+  <li>&square; Inkscape-Namespaces entfernt (bei Inkscape-Export)</li>
+  <li>&square; Ebenenreihenfolge: Regionen &rarr; Punkte &rarr; Labels</li>
+  <li>&square; SVG validiert (z.B. &uuml;ber validator.w3.org)</li>
+</ul>
+
+<div class="footer">
+  <p>Erstellt am 20. M&auml;rz 2026 &ndash; Alts&auml;chsisches Editionsprojekt</p>
+</div>
+
+</body>
+</html>
