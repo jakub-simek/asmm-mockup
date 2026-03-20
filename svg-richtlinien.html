@@ -216,7 +216,76 @@
   <li>Die SVG-Datei bleibt schlank und &uuml;bersichtlich</li>
 </ul>
 
-<h2>7. SVG-Beispiel (Minimalstruktur)</h2>
+<h2>7. Kartenmaterial: Geographischer Hintergrund</h2>
+
+<p>F&uuml;r den geographischen Hintergrund (K&uuml;stenlinien, Fl&uuml;sse, Grenzen) muss nicht bei Null gezeichnet werden. Es gibt frei verf&uuml;gbare Geodaten, die sich als SVG-Basiskarte eignen.</p>
+
+<h3>7.1 Natural Earth Data (Empfehlung)</h3>
+
+<ul>
+  <li><strong>Quelle:</strong> <a href="https://www.naturalearthdata.com/downloads/">naturalearthdata.com</a> &ndash; der Standarddatensatz f&uuml;r wissenschaftliche Karten</li>
+  <li><strong>Ma&szlig;stab:</strong> 1:10m (detailliert), 1:50m, 1:110m</li>
+  <li><strong>Relevante Layer:</strong> Coastline, Rivers + Lake Centerlines, Admin-0/1 Boundaries, Populated Places</li>
+  <li><strong>Format:</strong> Shapefiles (.shp) &ndash; <em>nicht</em> direkt SVG, aber leicht konvertierbar</li>
+  <li><strong>Lizenz: Public Domain</strong> &ndash; keine Einschr&auml;nkungen, ideal f&uuml;r Publikationen</li>
+</ul>
+
+<div class="note">
+  <strong>Workflow Natural Earth &rarr; SVG:</strong><br>
+  1. Shapefiles von naturalearthdata.com herunterladen (z.&thinsp;B. <em>ne_10m_coastline</em>, <em>ne_10m_rivers_lake_centerlines</em>)<br>
+  2. In <a href="https://mapshaper.org/">mapshaper.org</a> &ouml;ffnen (Drag &amp; Drop im Browser, keine Installation n&ouml;tig)<br>
+  3. Auf den Kartenausschnitt zuschneiden: ca. 5&ndash;12&deg; O, 51&ndash;55&deg; N<br>
+  4. Als SVG exportieren<br>
+  5. Resultierende SVG in Affinity / Inkscape / Illustrator &ouml;ffnen und Dialektregionen dar&uuml;berlegen
+</div>
+
+<h3>7.2 Wikimedia Commons (schnellster Weg)</h3>
+
+<ul>
+  <li><strong>Quelle:</strong> <a href="https://commons.wikimedia.org/wiki/Category:SVG_blank_maps_of_Germany">Kategorie: SVG blank maps of Germany</a></li>
+  <li><strong>Format:</strong> SVG &ndash; direkt verwendbar, kein Konvertierungsschritt</li>
+  <li><strong>Beispiele:</strong> <code>Germany location map.svg</code> (mit Fl&uuml;ssen, Bundesl&auml;ndergrenzen, Gitternetz)</li>
+  <li><strong>Lizenz:</strong> Meist CC BY-SA 3.0/4.0 (Namensnennung erforderlich)</li>
+  <li><strong>Tipp:</strong> Auch die Kategorien <em>SVG linguistic maps of Germany</em> und <em>Maps of the Saxon language</em> durchsuchen &ndash; m&ouml;glicherweise existiert bereits eine Dialektkarte als Ausgangsbasis</li>
+</ul>
+
+<h3>7.3 OpenStreetMap-basierte Quellen</h3>
+
+<ul>
+  <li><strong><a href="https://overpass-turbo.eu/">Overpass Turbo</a>:</strong> Gezielt einzelne Features abfragen (z.&thinsp;B. nur den Weserlauf in hoher Aufl&ouml;sung). Export als GeoJSON, dann in mapshaper.org zu SVG konvertieren.</li>
+  <li><strong><a href="https://inkatlas.com/">Inkatlas</a>:</strong> Erzeugt druckfertige SVGs direkt aus OSM-Daten mit sauberer Ebenenstruktur.</li>
+  <li><strong>Lizenz:</strong> ODbL &ndash; Namensnennung &bdquo;&copy; OpenStreetMap contributors&ldquo; erforderlich</li>
+</ul>
+
+<h3>7.4 Weitere Quellen</h3>
+
+<table>
+  <tr><th>Quelle</th><th>Features</th><th>Format</th><th>Lizenz</th></tr>
+  <tr>
+    <td><a href="https://gadm.org/download_country.html">GADM</a></td>
+    <td>Verwaltungsgrenzen bis Gemeindeebene</td>
+    <td>Shapefile / GeoJSON</td>
+    <td>Akademisch frei</td>
+  </tr>
+  <tr>
+    <td><a href="https://www.diva-gis.org/gdata">DIVA-GIS</a></td>
+    <td>Gew&auml;sser, Grenzen, H&ouml;hendaten</td>
+    <td>Shapefile</td>
+    <td>Akademisch frei</td>
+  </tr>
+  <tr>
+    <td><a href="https://eurogeographics.org/maps-for-europe/open-data/">EuroGlobalMap</a></td>
+    <td>Europaweite Daten 1:1M</td>
+    <td>Shapefile / GeoPackage</td>
+    <td>Offen mit Nennung</td>
+  </tr>
+</table>
+
+<h3>7.5 Empfohlener Ansatz</h3>
+
+<p><strong>Natural Earth + Mapshaper</strong> ist der sauberste Weg: Die Public-Domain-Lizenz erlaubt uneingeschr&auml;nkte Nutzung in Publikationen, der 1:10m-Datensatz enth&auml;lt genau die ben&ouml;tigten Features (K&uuml;stenlinie, Elbe, Weser, Ems, Rhein), und mapshaper.org erm&ouml;glicht die Konvertierung ohne Softwareinstallation. Die resultierende SVG dient als Hintergrundebene, &uuml;ber die der Wissenschaftler die Dialektregionen und Ortspunkte legt.</p>
+
+<h2>8. SVG-Beispiel (Minimalstruktur)</h2>
 
 <pre><code>&lt;svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg"&gt;
 
@@ -242,7 +311,7 @@
 
 &lt;/svg&gt;</code></pre>
 
-<h2>8. Checkliste vor &Uuml;bergabe</h2>
+<h2>9. Checkliste vor &Uuml;bergabe</h2>
 
 <ul>
   <li>&square; Jede Region hat <code>class="region"</code> und eine sprechende <code>id</code></li>
